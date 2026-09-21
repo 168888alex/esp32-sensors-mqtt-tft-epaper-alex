@@ -35,6 +35,7 @@ local_diagrams.py
 google課程表.txt
 /*.txt
 /*.png
+/*.jpg
 
 # Local credentials and generated IDE files
 **/config.h
