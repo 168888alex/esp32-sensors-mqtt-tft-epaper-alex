@@ -8,8 +8,6 @@
 
 ![電子紙感測器版面](36_EPAPER/epaper_sensor_layout_preview.png)
 
-![三色電子紙中秋圖片範例](36_EPAPER/chang_e_preview.png)
-
 ## 電子紙硬體設定
 
 微雪 Waveshare 2.9 吋三色電子紙 V4 / Rev2.1，解析度 296×128，使用橫向畫面：
@@ -132,4 +130,3 @@ $cli='C:\Users\user\AppData\Local\Programs\Arduino IDE\resources\app\lib\backend
 ## 授權與第三方函式庫
 
 本專案中的第三方函式庫各自依其原始授權條款使用；請參考各函式庫目錄內的 LICENSE/README 文件。
-
