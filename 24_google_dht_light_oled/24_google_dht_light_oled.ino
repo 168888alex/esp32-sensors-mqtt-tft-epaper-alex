@@ -1,0 +1,393 @@
+#include <Wire.h>
+#include <SimpleDHT.h>
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
+
+const int DHT_PIN = 14;
+const int LIGHT_PIN = 33;
+const int OLED_SDA = 21;
+const int OLED_SCL = 22;
+const uint8_t OLED_ADDRESS = 0x3C;
+
+SimpleDHT11 dht11(DHT_PIN);
+const char *WIFI_SSID = "YOUR_WIFI_SSID";
+const char *WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+const char *GOOGLE_SCRIPT_ID = "YOUR_GOOGLE_SCRIPT_ID";
+const char *GOOGLE_SHEET_ID = "YOUR_GOOGLE_SHEET_ID";
+const char *GOOGLE_SHEET_NAME = "data";
+const unsigned long UPLOAD_INTERVAL_MS = 10000;
+unsigned long lastUploadMillis = 0;
+
+const uint8_t DIGITS[][5] = {
+  {0x3E,0x51,0x49,0x45,0x3E},{0x00,0x42,0x7F,0x40,0x00},
+  {0x42,0x61,0x51,0x49,0x46},{0x21,0x41,0x45,0x4B,0x31},
+  {0x18,0x14,0x12,0x7F,0x10},{0x27,0x45,0x45,0x45,0x39},
+  {0x3C,0x4A,0x49,0x49,0x30},{0x01,0x71,0x09,0x05,0x03},
+  {0x36,0x49,0x49,0x49,0x36},{0x06,0x49,0x49,0x29,0x1E}
+};
+
+const uint8_t LETTERS[][5] = {
+  {0x7E,0x11,0x11,0x11,0x7E},{0x7F,0x49,0x49,0x49,0x36},{0x3E,0x41,0x41,0x41,0x22},
+  {0x7F,0x41,0x41,0x22,0x1C},{0x7F,0x49,0x49,0x49,0x41},{0x7F,0x09,0x09,0x09,0x01},
+  {0x3E,0x41,0x49,0x49,0x7A},{0x7F,0x08,0x08,0x08,0x7F},{0x00,0x41,0x7F,0x41,0x00},
+  {0x20,0x40,0x41,0x3F,0x01},{0x7F,0x08,0x14,0x22,0x41},{0x7F,0x40,0x40,0x40,0x40},
+  {0x7F,0x02,0x0C,0x02,0x7F},{0x7F,0x04,0x08,0x10,0x7F},{0x3E,0x41,0x41,0x41,0x3E},
+  {0x7F,0x09,0x09,0x09,0x06},{0x3E,0x41,0x51,0x21,0x5E},{0x7F,0x09,0x19,0x29,0x46},
+  {0x46,0x49,0x49,0x49,0x31},{0x01,0x01,0x7F,0x01,0x01},{0x3F,0x40,0x40,0x40,0x3F},
+  {0x1F,0x20,0x40,0x20,0x1F},{0x7F,0x20,0x18,0x20,0x7F},{0x63,0x14,0x08,0x14,0x63},
+  {0x07,0x08,0x70,0x08,0x07},{0x61,0x51,0x49,0x45,0x43}
+};
+
+void oledCommand(uint8_t command) {
+  Wire.beginTransmission(OLED_ADDRESS);
+  Wire.write(0x00);
+  Wire.write(command);
+  Wire.endTransmission();
+}
+
+void oledInit() {
+  Wire.begin(OLED_SDA, OLED_SCL);
+  delay(100);
+  const uint8_t commands[] = {0xAE,0xD5,0x80,0xA8,0x3F,0xD3,0x00,0x40,0x8D,0x14,0x20,0x00,0xA1,0xC8,0xDA,0x12,0x81,0x7F,0xD9,0xF1,0xDB,0x40,0xA4,0xA6,0xAF};
+  for (uint8_t command : commands) oledCommand(command);
+}
+
+void oledPosition(uint8_t column, uint8_t page) {
+  oledCommand(0xB0 | page);
+  oledCommand(column & 0x0F);
+  oledCommand(0x10 | (column >> 4));
+}
+
+void oledClear() {
+  for (uint8_t page = 0; page < 8; page++) {
+    for (uint8_t block = 0; block < 8; block++) {
+      oledPosition(block * 16, page);
+      Wire.beginTransmission(OLED_ADDRESS);
+      Wire.write(0x40);
+      for (uint8_t column = 0; column < 16; column++) Wire.write(0x00);
+      Wire.endTransmission();
+    }
+  }
+}
+
+void getGlyph(char character, uint8_t glyph[5]) {
+  memset(glyph, 0, 5);
+  if (character >= '0' && character <= '9') {
+    const uint8_t digits[][5] = {
+      {0x3E,0x51,0x49,0x45,0x3E},{0x00,0x42,0x7F,0x40,0x00},{0x42,0x61,0x51,0x49,0x46},
+      {0x21,0x41,0x45,0x4B,0x31},{0x18,0x14,0x12,0x7F,0x10},{0x27,0x45,0x45,0x45,0x39},
+      {0x3C,0x4A,0x49,0x49,0x30},{0x01,0x71,0x09,0x05,0x03},{0x36,0x49,0x49,0x49,0x36},
+      {0x06,0x49,0x49,0x29,0x1E}
+    };
+    memcpy(glyph, digits[character - '0'], 5);
+  } else if (character >= 'A' && character <= 'Z') {
+    const uint8_t letters[][5] = {
+      {0x7E,0x11,0x11,0x11,0x7E},{0x7F,0x49,0x49,0x49,0x36},{0x3E,0x41,0x41,0x41,0x22},
+      {0x7F,0x41,0x41,0x22,0x1C},{0x7F,0x49,0x49,0x49,0x41},{0x7F,0x09,0x09,0x09,0x01},
+      {0x3E,0x41,0x49,0x49,0x7A},{0x7F,0x08,0x08,0x08,0x7F},{0x00,0x41,0x7F,0x41,0x00},
+      {0x20,0x40,0x41,0x3F,0x01},{0x7F,0x08,0x14,0x22,0x41},{0x7F,0x40,0x40,0x40,0x40},
+      {0x7F,0x02,0x0C,0x02,0x7F},{0x7F,0x04,0x08,0x10,0x7F},{0x3E,0x41,0x41,0x41,0x3E},
+      {0x7F,0x09,0x09,0x09,0x06},{0x3E,0x41,0x51,0x21,0x5E},{0x7F,0x09,0x19,0x29,0x46},
+      {0x46,0x49,0x49,0x49,0x31},{0x01,0x01,0x7F,0x01,0x01},{0x3F,0x40,0x40,0x40,0x3F},
+      {0x1F,0x20,0x40,0x20,0x1F},{0x7F,0x20,0x18,0x20,0x7F},{0x63,0x14,0x08,0x14,0x63},
+      {0x07,0x08,0x70,0x08,0x07},{0x61,0x51,0x49,0x45,0x43}
+    };
+    memcpy(glyph, letters[character - 'A'], 5);
+  } else if (character == ':') {
+    glyph[1] = 0x36;
+  } else if (character == '%') {
+    glyph[0] = 0x62; glyph[1] = 0x64; glyph[2] = 0x08; glyph[3] = 0x13; glyph[4] = 0x23;
+  } else if (character == 'C') {
+    glyph[0] = 0x3E; glyph[1] = 0x41; glyph[2] = 0x41; glyph[3] = 0x41; glyph[4] = 0x22;
+  }
+}
+
+void oledChar(char character) {
+  uint8_t glyph[5];
+  getGlyph(character, glyph);
+  for (uint8_t index = 0; index < 5; index++) Wire.write(glyph[index]);
+  Wire.write(0x00);
+}
+
+void oledTextFixed(uint8_t column, uint8_t page, const char *text, uint8_t characterCount) {
+  oledPosition(column, page);
+  Wire.beginTransmission(OLED_ADDRESS);
+  Wire.write(0x40);
+  for (uint8_t index = 0; index < characterCount; index++) {
+    oledChar(text[index] ? text[index] : ' ');
+  }
+  Wire.endTransmission();
+}
+
+uint8_t scaleGlyphPage(const uint8_t glyph[5], uint8_t pagePart, uint8_t sourceColumn) {
+  uint8_t result = 0;
+  for (uint8_t sourceBit = 0; sourceBit < 4; sourceBit++) {
+    uint8_t glyphBit = pagePart * 4 + sourceBit;
+    if (glyphBit < 7 && (glyph[sourceColumn] & (1 << glyphBit))) {
+      result |= (1 << (sourceBit * 2));
+      result |= (1 << (sourceBit * 2 + 1));
+    }
+  }
+  return result;
+}
+
+void oledTextLargeFixed(uint8_t column, uint8_t page, const char *text, uint8_t characterCount) {
+  uint8_t top[60];
+  uint8_t bottom[60];
+  uint8_t outputIndex = 0;
+  for (uint8_t characterIndex = 0; characterIndex < characterCount; characterIndex++) {
+    uint8_t glyph[5];
+    getGlyph(text[characterIndex] ? text[characterIndex] : ' ', glyph);
+    for (uint8_t sourceColumn = 0; sourceColumn < 5; sourceColumn++) {
+      top[outputIndex] = scaleGlyphPage(glyph, 0, sourceColumn);
+      bottom[outputIndex++] = scaleGlyphPage(glyph, 1, sourceColumn);
+      top[outputIndex - 1] = scaleGlyphPage(glyph, 0, sourceColumn);
+    }
+    top[outputIndex] = 0;
+    bottom[outputIndex] = 0;
+    outputIndex++;
+  }
+  oledPosition(column, page);
+  Wire.beginTransmission(OLED_ADDRESS);
+  Wire.write(0x40);
+  for (uint8_t index = 0; index < outputIndex; index++) Wire.write(top[index]);
+  Wire.endTransmission();
+  oledPosition(column, page + 1);
+  Wire.beginTransmission(OLED_ADDRESS);
+  Wire.write(0x40);
+  for (uint8_t index = 0; index < outputIndex; index++) Wire.write(bottom[index]);
+  Wire.endTransmission();
+}
+
+const uint8_t ICON_THERMOMETER[2][16] = {
+  {0x00,0x00,0x00,0x00,0x80,0xC0,0xFF,0xFF,0xC0,0x80,0x00,0x00,0x00,0x00,0x00,0x00},
+  {0x00,0x00,0x00,0x07,0x0F,0x1F,0xFF,0xFF,0x1F,0x0F,0x07,0x00,0x00,0x00,0x00,0x00}
+};
+
+const uint8_t ICON_DROPLET[2][16] = {
+  {0x00,0x00,0xC0,0xF0,0xF8,0xFC,0xFE,0xFF,0xFE,0xFC,0xF8,0xF0,0xC0,0x00,0x00,0x00},
+  {0x00,0x00,0x03,0x0F,0x1F,0x3F,0x7F,0xFF,0x7F,0x3F,0x1F,0x0F,0x03,0x00,0x00,0x00}
+};
+
+const uint8_t ICON_SUN[2][16] = {
+  {0x10,0x08,0x84,0xE5,0xFE,0xFC,0xFC,0xFE,0xE5,0x84,0x08,0x10,0x00,0x00,0x00,0x00},
+  {0x08,0x10,0x21,0xA7,0x7F,0x3F,0x3F,0x7F,0xA7,0x21,0x10,0x08,0x00,0x00,0x00,0x00}
+};
+void oledBitmap16x16(uint8_t column, uint8_t page, const uint8_t bitmap[2][16]) {
+  for (uint8_t bitmapPage = 0; bitmapPage < 2; bitmapPage++) {
+    oledPosition(column, page + bitmapPage);
+    Wire.beginTransmission(OLED_ADDRESS);
+    Wire.write(0x40);
+    for (uint8_t index = 0; index < 16; index++) Wire.write(bitmap[bitmapPage][index]);
+    Wire.endTransmission();
+  }
+}
+
+void oledVerticalLineFromPage(uint8_t column, uint8_t startPage) {
+  for (uint8_t page = startPage; page < 8; page++) {
+    oledPosition(column, page);
+    Wire.beginTransmission(OLED_ADDRESS);
+    Wire.write(0x40);
+    Wire.write(0xFF);
+    Wire.endTransmission();
+  }
+}
+
+void oledHorizontalLine(uint8_t page, uint8_t mask) {
+  for (uint8_t block = 0; block < 8; block++) {
+    oledPosition(block * 16, page);
+    Wire.beginTransmission(OLED_ADDRESS);
+    Wire.write(0x40);
+    for (uint8_t index = 0; index < 16; index++) Wire.write(mask);
+    Wire.endTransmission();
+  }
+}
+
+void updateSmallLine(uint8_t column, uint8_t page, const char *text, uint8_t characterCount, char *lastText) {
+  if (strcmp(text, lastText) != 0) {
+    oledTextFixed(column, page, text, characterCount);
+    strncpy(lastText, text, 21);
+    lastText[21] = 0;
+  }
+}
+
+void updateLargeLine(uint8_t column, uint8_t page, const char *text, uint8_t characterCount, char *lastText) {
+  if (strcmp(text, lastText) != 0) {
+    oledTextLargeFixed(column, page, text, characterCount);
+    strncpy(lastText, text, 21);
+    lastText[21] = 0;
+  }
+}
+
+char lastTemperature[22] = "";
+char lastHumidity[22] = "";
+char lastLight[22] = "";
+
+void drawMainScreen() {
+  oledClear();
+  oledTextFixed(0, 0, "ENVIRONMENT", 12);
+  oledHorizontalLine(4, 0x01);
+  oledVerticalLineFromPage(63, 4);
+
+  oledBitmap16x16(4, 1, ICON_THERMOMETER);
+  oledTextFixed(28, 3, "TEMP", 5);
+  oledBitmap16x16(4, 5, ICON_DROPLET);
+  oledTextFixed(20, 7, "HUMIDITY", 9);
+  oledBitmap16x16(68, 5, ICON_SUN);
+  oledTextFixed(84, 7, "LIGHT", 6);
+}
+
+void showWiFiProgress(const char *message, const char *progress) {
+  oledClear();
+  oledTextFixed(0, 1, "WIFI STATUS", 12);
+  oledTextFixed(0, 3, message, 20);
+  oledTextFixed(0, 5, progress, 20);
+}
+
+bool connectWiFi() {
+  Serial.printf("Connecting to WiFi: %s\n", WIFI_SSID);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  unsigned long startMillis = millis();
+  uint8_t dotCount = 0;
+
+  while (WiFi.status() != WL_CONNECTED && millis() - startMillis < 30000) {
+    char progress[21] = "";
+    for (uint8_t index = 0; index < dotCount; index++) progress[index] = '.';
+    progress[dotCount] = 0;
+    showWiFiProgress("CONNECTING", progress);
+    Serial.print('.');
+    dotCount = (dotCount + 1) % 16;
+    delay(500);
+  }
+  Serial.println();
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.print("WiFi connected, IP: ");
+    Serial.println(WiFi.localIP());
+    showWiFiProgress("CONNECTED", "WIFI OK");
+    delay(1200);
+    return true;
+  }
+
+  Serial.println("WiFi connection failed");
+  showWiFiProgress("CONNECTION FAIL", "CHECK WIFI");
+  delay(1500);
+  return false;
+}
+
+String URLEncode(const char *message) {
+  const char *hex = "0123456789ABCDEF";
+  String encoded;
+  while (*message) {
+    uint8_t character = static_cast<uint8_t>(*message++);
+    if ((character >= 'a' && character <= 'z') ||
+        (character >= 'A' && character <= 'Z') ||
+        (character >= '0' && character <= '9') ||
+        character == '-' || character == '_' || character == '.') {
+      encoded += static_cast<char>(character);
+    } else {
+      encoded += '%';
+      encoded += hex[(character >> 4) & 0x0F];
+      encoded += hex[character & 0x0F];
+    }
+  }
+  return encoded;
+}
+
+void showGoogleStatus(const char *status) {
+  oledTextFixed(0, 0, status, 12);
+  Serial.println(status);
+}
+
+bool sendToGoogleSheets(int temperature, int humidity, int lightPercent) {
+  if (WiFi.status() != WL_CONNECTED && !connectWiFi()) {
+    return false;
+  }
+
+  String data = String(temperature) + "," + String(humidity) + "," + String(lightPercent);
+  String url = String("https://script.google.com/macros/s/") + GOOGLE_SCRIPT_ID
+             + "/exec?type=insert&dateInclude=1&sheetId=" + GOOGLE_SHEET_ID
+             + "&sheetTag=" + URLEncode(GOOGLE_SHEET_NAME)
+             + "&data=" + URLEncode(data.c_str());
+
+  WiFiClientSecure client;
+  client.setInsecure();
+  HTTPClient http;
+  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+  showGoogleStatus("GOOGLE SENDING");
+  if (!http.begin(client, url)) {
+    Serial.println("Google connection setup failed");
+    showGoogleStatus("GOOGLE FAIL");
+    return false;
+  }
+
+  int responseCode = http.GET();
+  String response = http.getString();
+  http.end();
+  Serial.printf("Google response: %d, body: %s\n", responseCode, response.c_str());
+  bool success = responseCode == HTTP_CODE_OK && response.indexOf("Error:") < 0 && response.indexOf("missing") < 0;
+  showGoogleStatus(success ? "GOOGLE OK" : "GOOGLE FAIL");
+  delay(700);
+  return success;
+}
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);
+  pinMode(LIGHT_PIN, INPUT);
+  oledInit();
+  oledClear();
+  connectWiFi();
+  drawMainScreen();
+}
+
+void loop() {
+  byte temperature = 0;
+  byte humidity = 0;
+  int error = dht11.read(&temperature, &humidity, NULL);
+  int lightRaw = analogRead(LIGHT_PIN);
+  int lightPercent = constrain(map(lightRaw, 0, 4095, 0, 100), 0, 100);
+  char temperatureText[8];
+  char humidityText[8];
+  char lightText[8];
+
+  if (error == SimpleDHTErrSuccess) {
+    snprintf(temperatureText, sizeof(temperatureText), "%dC", temperature);
+    snprintf(humidityText, sizeof(humidityText), "%d%%", humidity);
+    updateLargeLine(24, 1, temperatureText, 4, lastTemperature);
+    updateLargeLine(20, 5, humidityText, 4, lastHumidity);
+    Serial.printf("Temperature: %d C, Humidity: %d %%, Light: %d %% (raw %d)\n", temperature, humidity, lightPercent, lightRaw);
+
+    if (lastUploadMillis == 0 || millis() - lastUploadMillis >= UPLOAD_INTERVAL_MS) {
+      bool uploaded = sendToGoogleSheets(temperature, humidity, lightPercent);
+      lastUploadMillis = millis();
+      Serial.println(uploaded ? "Google Sheets upload OK" : "Google Sheets upload failed");
+      drawMainScreen();
+      lastTemperature[0] = 0;
+      lastHumidity[0] = 0;
+      lastLight[0] = 0;
+      updateLargeLine(24, 1, temperatureText, 4, lastTemperature);
+      updateLargeLine(20, 5, humidityText, 4, lastHumidity);
+      snprintf(lightText, sizeof(lightText), "%d%%", lightPercent);
+      updateLargeLine(84, 5, lightText, 4, lastLight);
+    }
+  } else {
+    updateLargeLine(24, 1, "ERR", 4, lastTemperature);
+    updateLargeLine(20, 5, "ERR", 4, lastHumidity);
+    Serial.printf("DHT11 read failed, error=%d\n", error);
+  }
+
+  snprintf(lightText, sizeof(lightText), "%d%%", lightPercent);
+  updateLargeLine(84, 5, lightText, 4, lastLight);
+  delay(1000);
+}
+
+
+
+
+
+
+
+
+

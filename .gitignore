@@ -1,0 +1,50 @@
+# Arduino build and upload outputs
+**/build/
+**/*.bin
+**/*.elf
+**/*.map
+**/*.partitions.bin
+**/*.bootloader.bin
+**/*.hex
+
+# Local tools, caches and downloaded archives
+tools/
+*.zip
+
+# Large vendor/reference trees are kept locally, not in this teaching repo
+waveshare_epaper_ref/
+libraries/**/examples/
+libraries/**/extras/
+libraries/**/tests/
+libraries/Adafruit-GFX-Library/
+libraries/GxEPD2/
+
+# Large source photo folders; curated previews are kept in 36_EPAPER/
+0914報告圖示/
+成果照片/
+reference_preview/
+
+# Course office documents and local generated reports
+*.docx
+*.pptx
+*.log
+local_*.png
+make_0914_report.py
+make_reference_0914_report.py
+local_diagrams.py
+google課程表.txt
+/*.txt
+/*.png
+
+# Local credentials and generated IDE files
+**/config.h
+handoff.md
+.vscode/
+.idea/
+*.user
+*.userosscache
+*.suo
+
+# OS files
+Thumbs.db
+Desktop.ini
