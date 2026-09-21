@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>0921｜ESP32 Sensor Lab 成果相簿</title>
+  <style>
+    :root{--paper:#f5f2ec;--ink:#181a1b;--muted:#6d706d;--red:#d94838;--line:#d8d2c8}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif}header{background:var(--ink);color:#fff;padding:48px 6vw}header a{color:#ff8373;text-decoration:none}h1{font-size:clamp(32px,6vw,70px);margin:20px 0 8px;letter-spacing:-.06em}header p{color:#c4c7c2;margin:0}.wrap{width:min(1160px,88vw);margin:0 auto;padding:55px 0}.group{margin-bottom:56px}.group h2{font-size:26px;border-left:5px solid var(--red);padding-left:13px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{margin:0;background:#fff;border:1px solid var(--line);border-radius:5px;overflow:hidden}.card img{display:block;width:100%;height:190px;object-fit:cover}.card figcaption{padding:10px 12px;color:var(--muted);font-size:11px;word-break:break-all}footer{background:var(--ink);color:#aaa;padding:24px 6vw;font-size:12px}@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.grid{grid-template-columns:1fr}.card img{height:auto;max-height:360px}}
+  </style>
+</head>
+<body>
+  <header><a href="index.html">← 返回 ESP32 Sensor Lab</a><h1>0921 成果相簿</h1><p>本頁收錄 D:\ESP32\0921 資料夾內的全部圖片，共 65 張。</p></header>
+  <main class="wrap" id="gallery"></main>
+  <footer>ESP32 Sensor Lab · 0921 Project Archive</footer>
+  <script>
+    const files = [
+      "0914報告圖示/0914_系統架構圖.png","0914報告圖示/0914_系統流程圖.png","0914報告圖示/photo_1000070871.jpg","0914報告圖示/photo_1000070877.jpg","0914報告圖示/photo_1789350204394.jpg","0914報告圖示/photo_20260812_093053.jpg","0914報告圖示/photo_20260914_094026.jpg","0914報告圖示/photo_20260914_105054.jpg","0914報告圖示/photo_20260914_105908.jpg","0914報告圖示/photo_20260914_133451.jpg","0914報告圖示/photo_20260914_133456.jpg","0914報告圖示/photo_20260914_135656.jpg","0914報告圖示/photo_20260914_140110.jpg","0914報告圖示/photo_googlesheet1.jpg","0914報告圖示/photo_googlesheet2.jpg","0914報告圖示/photo_Screenshot_20260810_153459_LINE.jpg","0914報告圖示/photo_thingspeak1.jpg","0914報告圖示/photo_thingspeak2.jpg","0914報告圖示/photo_thingspeak3.jpg","0914報告圖示/photo_thingspeak4.jpg","0914報告圖示/photo_thingspeak5.jpg","0914報告圖示/photo_溫溼亮度硬體照片.jpg","0914報告圖示/photo_螢幕擷取畫面 2026-08-11 164038.jpg","0914報告圖示/reference_photo_1000070871.jpg","0914報告圖示/reference_photo_1000070877.jpg","0914報告圖示/reference_photo_1789350204394.jpg","0914報告圖示/reference_photo_20260812_093053.jpg","0914報告圖示/reference_photo_20260914_094026.jpg","0914報告圖示/reference_photo_20260914_105054.jpg","0914報告圖示/reference_photo_20260914_105908.jpg","0914報告圖示/reference_photo_20260914_133451.jpg","0914報告圖示/reference_photo_20260914_133456.jpg","0914報告圖示/reference_photo_20260914_135656.jpg","0914報告圖示/reference_photo_20260914_140110.jpg","0914報告圖示/reference_photo_googlesheet1.jpg","0914報告圖示/reference_photo_googlesheet2.jpg","0914報告圖示/reference_photo_Screenshot_20260810_153459_LINE.jpg","0914報告圖示/reference_photo_thingspeak1.jpg","0914報告圖示/reference_photo_thingspeak2.jpg","0914報告圖示/reference_photo_thingspeak3.jpg","0914報告圖示/reference_photo_thingspeak4.jpg","0914報告圖示/reference_photo_thingspeak5.jpg","0914報告圖示/reference_photo_溫溼亮度硬體照片.jpg","0914報告圖示/reference_photo_螢幕擷取畫面 2026-08-11 164038.jpg","成果照片/1000070871.jpg","成果照片/1000070877.jpg","成果照片/1789350204394.jpg","成果照片/20260812_093053.jpg","成果照片/20260914_094026.jpg","成果照片/20260914_105054.jpg","成果照片/20260914_105908.jpg","成果照片/20260914_133451.jpg","成果照片/20260914_133456.jpg","成果照片/20260914_135656.jpg","成果照片/20260914_140110.jpg","成果照片/googlesheet1.png","成果照片/googlesheet2.png","成果照片/Screenshot_20260810_153459_LINE.jpg","成果照片/thingspeak1.png","成果照片/thingspeak2.png","成果照片/thingspeak3.png","成果照片/thingspeak4.png","成果照片/thingspeak5.png","成果照片/溫溼亮度硬體照片.jpg","成果照片/螢幕擷取畫面 2026-08-11 164038.png"
+    ];
+    const root = document.querySelector('#gallery');
+    const groups = files.reduce((acc, file) => { const key = file.split('/')[0]; (acc[key] ||= []).push(file); return acc; }, {});
+    for (const [name, list] of Object.entries(groups)) {
+      const section = document.createElement('section'); section.className = 'group';
+      section.innerHTML = `<h2>${name}</h2><div class="grid"></div>`;
+      const grid = section.querySelector('.grid');
+      list.forEach(file => { const fig = document.createElement('figure'); fig.className='card'; const img=document.createElement('img'); img.loading='lazy'; img.src='assets/results/0921/'+file; img.alt=file; const cap=document.createElement('figcaption'); cap.textContent=file.split('/').slice(1).join('/'); fig.append(img,cap); grid.append(fig); });
+      root.append(section);
+    }
+  </script>
+</body>
+</html>
