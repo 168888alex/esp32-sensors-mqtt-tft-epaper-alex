@@ -2,55 +2,25 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="ESP32 感測器、MQTT、TFT 與微雪三色電子紙課程專案展示網站">
-  <title>ESP32 Sensor Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ESP32 感測器、MQTT、TFT 與微雪電子紙整合展示網站">
+  <title>ESP32 Sensor Lab｜專題展示</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="hero">
-    <nav class="nav wrap">
-      <a class="brand" href="#top"><span class="brand-dot"></span>ESP32 Sensor Lab</a>
-      <div class="nav-links"><a href="#project">專案</a><a href="#hardware">硬體</a><a href="#mqtt">MQTT</a><a href="#programs">程式</a><a class="nav-github" href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex">GitHub ↗</a></div>
-    </nav>
-    <div class="hero-grid wrap" id="top">
-      <div class="hero-copy">
-        <p class="eyebrow">ESP32 · IOT · E-PAPER</p>
-        <h1>把感測資料，<br><em>變成看得見的畫面。</em></h1>
-        <p class="lead">從 DHT11、光敏電阻到 MQTT，再到微雪 2.9 吋三色電子紙，這是一套可實作、可延伸的 ESP32 課程專案。</p>
-        <div class="hero-actions"><a class="button primary" href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex">查看 GitHub</a><a class="button ghost" href="#hardware">查看接線</a></div>
-      </div>
-      <div class="hero-card">
-        <div class="epaper-frame"><div class="epaper-screen"><div class="screen-title">ESP32 SENSOR</div><div class="screen-line"></div><div class="screen-metrics"><span><b>◉</b><strong>26</strong><small>°C</small><label>TEMP</label></span><span><b>●</b><strong>62</strong><small>%</small><label>HUMI</label></span><span><b>☼</b><strong>78</strong><small>%</small><label>LIGHT</label></span></div></div></div>
-        <p class="card-caption">40_epaper_mqtt · tri-color e-paper dashboard</p>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <section class="section wrap" id="project">
-      <div class="section-heading"><p class="eyebrow">PROJECT OVERVIEW</p><h2>一條從感測到控制的完整學習路徑</h2><p>每個資料點都能被讀取、傳送、顯示與控制，從基礎範例逐步整合成可展示的物聯網作品。</p></div>
-      <div class="feature-grid"><article class="feature"><span class="icon red">01</span><h3>即時感測</h3><p>DHT11 讀取溫度與濕度，光敏電阻讀取環境亮度，電子紙每 60 秒更新。</p></article><article class="feature"><span class="icon dark">02</span><h3>MQTT 傳輸</h3><p>以 JSON 發布 temp、humi、light 與感測器有效狀態。</p></article><article class="feature"><span class="icon red">03</span><h3>遠端控制</h3><p>訂閱三個 MQTT topic，控制綠、黃、紅三路 LED。</p></article></div>
-    </section>
-
-    <section class="section section-dark" id="hardware"><div class="wrap split"><div><p class="eyebrow">HARDWARE MAP</p><h2>微雪 2.9 吋三色電子紙</h2><p>使用 V4 / Rev2.1 模組，橫向解析度 296×128。腳位統一後，適合課程重複使用與快速換版。</p><div class="chips"><span>296 × 128 px</span><span>紅 · 白 · 黑</span><span>ESP32 Dev Module</span></div></div><div class="wiring"><div><b>電子紙</b><span>DIN / MOSI <strong>GPIO23</strong></span><span>SCK <strong>GPIO18</strong></span><span>CS <strong>GPIO27</strong></span><span>DC <strong>GPIO26</strong></span><span>RST <strong>GPIO25</strong></span><span>BUSY <strong>GPIO34</strong></span></div><div><b>感測與燈號</b><span>DHT11 <strong>GPIO14</strong></span><span>光敏電阻 <strong>GPIO33</strong></span><span>綠 / 黃 / 紅 LED <strong>15 / 2 / 4</strong></span></div></div></div></section>
-
-    <section class="section wrap" id="mqtt"><div class="section-heading"><p class="eyebrow">MQTT CONNECTION</p><h2>資料發布，控制訂閱</h2><p>Broker 使用 <code>mqttgo.io:1883</code>。以下設定與目前的 40_epaper_mqtt 完整對應。</p></div><div class="mqtt-grid"><div class="code-card"><div class="code-head"><span></span><span></span><span></span><b>sensor payload</b></div><pre>{
+  <header class="site-header"><div class="shell nav"><a class="brand" href="#top"><span class="brand-mark">ESP32</span><span>Sensor Lab</span></a><nav><a href="#system">系統</a><a href="#hardware">硬體</a><a href="#mqtt">MQTT</a><a href="#results">成果</a><a href="#programs">程式</a><a class="nav-cta" href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex">GitHub</a></nav></div></header>
+  <main id="top">
+    <section class="hero shell"><div class="hero-copy"><p class="eyebrow">OPEN HARDWARE · ESP32 PROJECT</p><h1>讓環境資料<br><em>被看見、被傳送、被控制。</em></h1><p class="lead">以 ESP32 為核心，串接 DHT11、光敏電阻、MQTT、ILI9225 TFT 與微雪 2.9 吋三色電子紙，完成一套可觀察、可操作的感測展示系統。</p><div class="actions"><a class="button primary" href="#system">探索系統</a><a class="button secondary" href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex">查看原始碼 ↗</a></div><div class="stats"><div><strong>60 s</strong><span>更新週期</span></div><div><strong>3</strong><span>感測／顯示介面</span></div><div><strong>MQTT</strong><span>遠端控制</span></div></div></div><div class="epaper-mock" aria-label="電子紙感測畫面示意"><div class="mock-top">ESP32 SENSOR <b>ONLINE</b></div><div class="mock-line"></div><div class="mock-values"><div><i class="icon thermometer">♨</i><strong>26</strong><span>°C</span><small>溫度</small></div><div><i class="icon">◒</i><strong>62</strong><span>%</span><small>濕度</small></div><div><i class="icon sun">☼</i><strong>78</strong><span>%</span><small>亮度</small></div></div><div class="mock-foot">RED · WHITE · BLACK / SPI READY</div></div></section>
+    <section class="section shell" id="system"><p class="eyebrow">01 · SYSTEM</p><div class="section-head"><h2>一條資料流，<em>五個清楚的階段。</em></h2><p>感測器取得環境資訊後，由 ESP32 整理成資料，透過 MQTT 傳送，同時更新顯示器並接收燈號控制指令。</p></div><div class="flow"><div><b>01</b><strong>感測</strong><span>DHT11<br>光敏電阻</span></div><i>→</i><div><b>02</b><strong>處理</strong><span>ESP32<br>每 60 秒</span></div><i>→</i><div class="accent"><b>03</b><strong>發布</strong><span>Wi‑Fi<br>MQTT JSON</span></div><i>→</i><div><b>04</b><strong>顯示</strong><span>TFT<br>電子紙</span></div><i>→</i><div class="accent-dark"><b>05</b><strong>控制</strong><span>LED<br>Callback</span></div></div></section>
+    <section class="dark-section" id="hardware"><div class="shell"><p class="eyebrow light">02 · HARDWARE</p><div class="section-head"><h2>硬體配置<br><em>從腳位開始清楚。</em></h2><p>課程統一使用 ESP32 腳位，讓電子紙、感測器與燈號控制可以依照同一份接線規格重現。</p></div><div class="hardware-grid"><div class="tags"><span>ESP32 Dev Module</span><span>Waveshare 2.9″ V4</span><span>三色電子紙</span><span>DHT11</span></div><div class="pin-table"><div><b>模組</b><b>訊號</b><b>GPIO</b></div><div><span>電子紙</span><span>DIN / MOSI</span><strong>23</strong></div><div><span>電子紙</span><span>SCK</span><strong>18</strong></div><div><span>電子紙</span><span>CS / DC / RST / BUSY</span><strong>27 / 26 / 25 / 34</strong></div><div><span>感測器</span><span>DHT11 / 光敏電阻</span><strong>14 / 33</strong></div><div><span>輸出燈號</span><span>綠 / 黃 / 紅</span><strong>15 / 2 / 4</strong></div></div></div></div></section>
+    <section class="section shell" id="mqtt"><p class="eyebrow">03 · MQTT</p><div class="section-head"><h2>用 MQTT 讓資料<br><em>流向需要的地方。</em></h2><p>感測資料以 JSON 發布；燈號則透過三個控制主題訂閱。Wi‑Fi SSID 與密碼不放入公開展示內容。</p></div><div class="mqtt-grid"><div class="broker"><small>BROKER</small><strong>mqttgo.io</strong><span>PORT 1883 · PubSubClient</span></div><div class="topic data"><b>感測資料／發布</b><code>alex/class301/data</code></div><div class="topic green"><b>綠燈／訂閱</b><code>alex/class301/ctrl/gled</code></div><div class="topic yellow"><b>黃燈／訂閱</b><code>alex/class301/ctrl/yled</code></div><div class="topic red"><b>紅燈／訂閱</b><code>alex/class301/ctrl/led4</code></div><pre>{
   "temp": 25,
   "humi": 60,
-  "light": 75,
-  "dhtValid": true,
-  "lightValid": true
-}</pre></div><div class="topic-list"><div class="topic"><span class="topic-led green"></span><div><b>綠燈控制</b><code>alex/class301/ctrl/gled</code></div></div><div class="topic"><span class="topic-led yellow"></span><div><b>黃燈控制</b><code>alex/class301/ctrl/yled</code></div></div><div class="topic"><span class="topic-led red"></span><div><b>紅燈控制</b><code>alex/class301/ctrl/led4</code></div></div><p class="hint">控制 payload：<code>{"state":"on"}</code> 或 <code>{"state":"off"}</code></p></div></div></section>
-
-    <section class="section gallery-section"><div class="wrap gallery"><div class="gallery-image"><img src="assets/epaper_sensor_layout_preview.png" alt="電子紙感測器畫面預覽"></div><div><p class="eyebrow">DISPLAY DESIGN</p><h2>紅、白、黑，讓資訊清楚留下</h2><p>圖示、數字與單位分欄配置；感測器失效時以紅色驚嘆號提示，確保電子紙在低功耗情境下仍能快速辨識。</p><a class="text-link" href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/36_EPAPER">查看電子紙素材 ↗</a></div></div></section>
-
-    <section class="section wrap results"><div class="section-heading"><p class="eyebrow">PROJECT RESULTS</p><h2>實作成果</h2><p>以下照片已整理尺寸並移除原始影像中可能包含的拍攝裝置資訊，僅保留硬體與畫面成果。</p></div><div class="results-grid"><figure class="result-card"><img src="assets/results/hardware-sensor.jpg" alt="ESP32 感測器與 OLED 硬體實作"><figcaption><b>感測器硬體</b><span>ESP32、DHT11、光敏電阻與顯示器</span></figcaption></figure><figure class="result-card"><img src="assets/results/tft-weather.jpg" alt="ILI9225 TFT 感測器畫面"><figcaption><b>TFT 顯示</b><span>天氣與溫濕度資料畫面</span></figcaption></figure><figure class="result-card"><img src="assets/results/dashboard-example.jpg" alt="溫濕亮度儀表板畫面"><figcaption><b>資料儀表板</b><span>溫度、濕度與亮度趨勢</span></figcaption></figure></div></section>
-
-    <section class="section report-section"><div class="wrap"><div class="section-heading"><p class="eyebrow">SEPTEMBER REPORT</p><h2>系統架構與資料流程</h2><p>0914 課程報告圖示已整理為公開展示版本；Wi‑Fi SSID 等個人設定已隱藏。</p></div><div class="report-grid"><figure class="report-card"><img src="assets/reports/system-architecture-sanitized.png" alt="ESP32 MQTT 系統架構圖"><figcaption>ESP32、感測器、TFT 與 MQTT 系統架構</figcaption></figure><figure class="report-card"><img src="assets/reports/system-flow.png" alt="ESP32 感測顯示與 MQTT 控制流程圖"><figcaption>感測、資料處理、發布與控制流程</figcaption></figure></div></div></section>
-
-    <section class="section wrap" id="programs"><div class="section-heading"><p class="eyebrow">PROGRAM INDEX</p><h2>從基礎範例一路整合</h2><p>每支程式都保留獨立資料夾，方便課程逐步編譯、比較與延伸。</p></div><div class="program-grid"><a href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/22_dht_light_oled"><b>22</b><span>DHT11 + 光敏電阻 + OLED</span></a><a href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/26_mqtt"><b>26</b><span>MQTT 感測資料發布</span></a><a href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/34_ili_mqtt_ctrl"><b>34</b><span>TFT + MQTT + LED 控制</span></a><a class="featured" href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/40_epaper_mqtt"><b>40</b><span>電子紙 MQTT 整合主線</span><i>↗</i></a><a href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/25_dht_line"><b>25</b><span>Wi‑Fi、LINE、Google Sheet</span></a><a href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/35_ili_mqtt_ctrl_page"><b>35</b><span>TFT 多頁感測器儀表板</span></a></div></section>
+  "light": 75
+}</pre></div></section>
+    <section class="section shell" id="results"><p class="eyebrow">04 · RESULTS</p><div class="section-head"><h2>從接線到畫面，<br><em>留下可閱讀的成果。</em></h2><p>公開展示只使用已整理過的素材；照片與架構圖已移除或遮蔽個人資訊及 Wi‑Fi 識別資料。</p></div><div class="gallery"><figure class="large"><img src="assets/results/hardware-sensor.jpg" alt="ESP32 與感測器實作成果"><figcaption><b>感測硬體</b><span>ESP32 · DHT11 · 光敏電阻 · 顯示器</span></figcaption></figure><figure><img src="assets/results/tft-weather.jpg" alt="TFT 天氣資料畫面"><figcaption><b>TFT 顯示</b><span>溫度、濕度與亮度介面</span></figcaption></figure><figure><img src="assets/results/dashboard-example.jpg" alt="資料儀表板示例"><figcaption><b>資料儀表板</b><span>MQTT 資料展示</span></figcaption></figure></div><div class="diagrams"><figure><img src="assets/reports/system-architecture-sanitized.png" alt="已遮蔽個資的系統架構圖"><figcaption>系統架構圖（已遮蔽個資）</figcaption></figure><figure><img src="assets/reports/system-flow.png" alt="系統資料流程圖"><figcaption>資料與控制流程圖</figcaption></figure></div></section>
+    <section class="section shell programs" id="programs"><p class="eyebrow">05 · PROGRAMS</p><div class="section-head"><h2>每支程式，<br><em>各自負責一件事。</em></h2><p>從單一感測器測試逐步整合到電子紙與 MQTT，保留清楚的學習路徑。</p></div><div class="program-list"><a href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/22_dht_light_oled"><b>22</b><strong>OLED Sensor</strong><span>DHT11 + 光敏電阻</span>↗</a><a href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/26_mqtt"><b>26</b><strong>MQTT Publish</strong><span>感測資料 JSON 發布</span>↗</a><a href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/35_ili_mqtt_ctrl_page"><b>35</b><strong>TFT Control Page</strong><span>ILI9225 顯示與 LED 控制</span>↗</a><a class="current" href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex/tree/main/40_epaper_mqtt"><b>40</b><strong>E‑Paper MQTT</strong><span>目前整合主線：感測、顯示、MQTT</span>↗</a></div></section>
   </main>
-  <footer><div class="wrap footer-inner"><span>ESP32 Sensor Lab · Alex</span><a href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex">GitHub ↗</a></div></footer>
+  <footer><div class="shell"><strong>ESP32 SENSOR LAB</strong><span>Sense · Publish · Display · Control</span><a href="https://github.com/168888alex/esp32-sensors-mqtt-tft-epaper-alex">前往 GitHub ↗</a></div></footer>
 </body>
 </html>
