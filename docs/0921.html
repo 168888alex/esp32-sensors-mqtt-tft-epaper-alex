@@ -10,7 +10,7 @@
 </head>
 <body>
   <header><a href="index.html">← 返回 ESP32 Sensor Lab</a><h1>0921 成果相簿</h1><p>本頁收錄 D:\ESP32\0921 資料夾內的全部圖片，共 65 張。</p></header>
-  <main class="wrap" id="gallery"></main>
+  <main class="wrap"><section class="featured"><div><p>處理成果</p><h2>麵包板透明去背</h2><span>保留 ESP32、OLED、感測器與完整接線，移除周圍背景。</span></div><img src="assets/results/0921/processed/breadboard-cutout.png" alt="麵包板透明去背成果"></section><div id="gallery"></div></main>
   <footer>ESP32 Sensor Lab · 0921 Project Archive</footer>
   <script>
     const files = [
@@ -28,3 +28,4 @@
   </script>
 </body>
 </html>
+    .featured{display:grid;grid-template-columns:.7fr 1.3fr;gap:30px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:28px;margin-bottom:55px}.featured p{color:var(--red);font:800 11px ui-monospace,monospace;letter-spacing:.15em}.featured h2{font-size:clamp(27px,4vw,44px);margin:8px 0}.featured span{color:var(--muted);font-size:13px}.featured img{display:block;width:100%;max-height:330px;object-fit:contain;background:linear-gradient(135deg,#fafafa,#e9e6df);border-radius:5px}@media(max-width:700px){.featured{grid-template-columns:1fr}}
